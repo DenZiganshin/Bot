@@ -1,0 +1,6 @@
+{
+  "database_row_limit":100,
+  "phrases_in_bot_message_count":5,
+  "inbound_phrase_length_limit": 50,
+  "message_initiation_frequency": 50
+}
