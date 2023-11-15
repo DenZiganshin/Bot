@@ -1,5 +1,6 @@
 import telebot
 import BotConfig
+import DataBase
 
 TELEBOT_TOKEN_ID = "6463635955:AAE1FVJf36OefFbxUwAM0XBKmn0HGCw0qvc"
 
@@ -7,6 +8,7 @@ tele_bot = telebot.TeleBot(TELEBOT_TOKEN_ID)
 
 # конфиг бота
 bot_config = BotConfig.BotConfig()
+bot_message_base = DataBase.DataBase(bot_config.database_row_limit)
 
 
 @tele_bot.message_handler(commands=['show_for_me_this_fucking_config'])
