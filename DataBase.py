@@ -3,38 +3,90 @@ from pathlib import Path
 
 
 class DataBase:
-    def __init__(self, db_path=Path('~').expanduser() / ".balabol_bot/database.db"):
-        self.__connection = sqlite3.connect(str(db_path))
-        self.__cursor = self.__connection.cursor()
-        self.__cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Phrase_value (
-        id INTEGER PRIMARY KEY,
-        chat INTEGER NOT NULL,
-        message TEXT NOT NULL
-        )
-        ''')
+    def __init__(self, max_chat_data_count, db_path=Path('~').expanduser() / ".balabol_bot/database.db"):
+        self.__table_name = "Phrase_value"
+        self.__max_chat_data_count = max_chat_data_count
+        self.__open_table(db_path)
+
+    def get_rand_messages(self, chat_id, count):
+        res_rand = self.__get_rand_id(chat_id, count)
+
+        messages = []
+        for id_tuple in res_rand:
+            messages.append(self.__get_message(id_tuple[0])[0])
+        return messages
+
+    def insert_new_data(self, chat_id, messages):
+        messages = self.__remove_not_unique(messages)
+        messages = self.__remove_existed(chat_id, messages)
+        self.__remove_oversize(chat_id, messages)
+
+        for msg in messages:
+            self.__add_messages(chat_id, msg)
 
     def get_messages(self, chat_id):
-        self.__cursor.execute('SELECT message FROM Phrase_value where chat = ?', (chat_id, ))
-        return self.__cursor.fetchall()
-
-    def get_rand_id(self, chat_id, count):
-        self.__cursor.execute('SELECT id FROM Phrase_value where chat = ? ORDER BY RANDOM() LIMIT ?',
-                              (chat_id, count,))
+        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ?', (chat_id, ))
         return self.__cursor.fetchall()
 
     def remove(self, id):
-        self.__cursor.execute('DELETE FROM Phrase_value WHERE id = ? ',
+        self.__cursor.execute(f'DELETE FROM {self.__table_name} WHERE id = ? ',
                               (id,))
 
-    def add_messages(self, chat_id, message):
-        self.__cursor.execute('INSERT INTO Phrase_value (chat, message) VALUES (?, ?)',
+    def clear(self):
+        self.__cursor.execute(f'DELETE FROM {self.__table_name}')
+        self.__connection.commit()
+
+    def __open_table(self, db_path):
+        self.__connection = sqlite3.connect(str(db_path))
+        self.__cursor = self.__connection.cursor()
+        self.__cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS {self.__table_name} (
+                id INTEGER PRIMARY KEY,
+                chat INTEGER NOT NULL,
+                message TEXT NOT NULL
+                )
+                ''')
+
+    def __get_message(self, id):
+        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where id = ?', (id, ))
+        msg_list = self.__cursor.fetchall()
+        if len(msg_list) == 0:
+            return None
+        else:
+            return msg_list[0]
+
+    @staticmethod
+    def __remove_not_unique(messages):
+        return list(set(messages))
+
+    def __remove_existed(self, chat_id, message):
+        res_msgs = []
+        for msg in message:
+            if not self.__is_message_exists(chat_id, msg):
+                res_msgs.append(msg)
+        return res_msgs
+
+    def __is_message_exists(self, chat_id, messages):
+        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ? and message = ?',
+                              (chat_id, messages))
+        return len(self.__cursor.fetchall()) != 0
+
+    def __add_messages(self, chat_id, message):
+        self.__cursor.execute(f'INSERT INTO {self.__table_name} (chat, message) VALUES (?, ?)',
                        (chat_id, message))
         self.__connection.commit()
 
-    def clear(self):
-        self.__cursor.execute('DELETE FROM Phrase_value')
-        self.__connection.commit()
+    def __get_rand_id(self, chat_id, count):
+        self.__cursor.execute(f'SELECT id FROM {self.__table_name} where chat = ? ORDER BY RANDOM() LIMIT ?',
+                              (chat_id, count,))
+        return self.__cursor.fetchall()
+
+    def __remove_oversize(self, chat_id, messages):
+        cnt_for_remove = len(messages) + len(self.get_messages(chat_id)) - self.__max_chat_data_count
+        if cnt_for_remove > 0:
+            ids = self.__get_rand_id(chat_id, cnt_for_remove)
+            for id_for_remove in ids:
+                self.remove(id_for_remove[0])
 
     def __del__(self):
         self.__connection.commit()
@@ -42,26 +94,27 @@ class DataBase:
 
 
 if __name__ == '__main__':
-    db = DataBase("tests/config/database.db")
+    db = DataBase(2, "tests/config/database.db")
 
-    db.add_messages(1, "a1")
-    db.add_messages(1, "a2")
-    db.add_messages(1, "a3")
-    db.add_messages(1, "a4")
+    db.insert_new_data(1, {"a1"})
+    db.insert_new_data(1, {"a2"})
+    db.insert_new_data(1, {"a3"})
+    db.insert_new_data(1, {"a4"})
 
-    db.add_messages(2, "a1")
-    db.add_messages(2, "a2")
-    db.add_messages(2, "a3")
-    db.add_messages(2, "a4")
+    # db.insert_new_data(2, {"a1"})
+    # db.insert_new_data(2, {"a2"})
+    # db.insert_new_data(2, {"a3"})
+    # db.insert_new_data(2, {"a4"})
 
     res = db.get_messages(1)
-    res_rend = db.get_rand_id(1, 1)
+    res_rend = db.get_rand_messages(1, 1)
 
     for id_tuple in res_rend:
-        id = id_tuple[0]
-        db.remove(id)
+        db.remove(id_tuple[0])
 
     res2 = db.get_messages(1)
+
+    msgs = db.get_rand_messages(1, 1)
 
     db.clear()
 
