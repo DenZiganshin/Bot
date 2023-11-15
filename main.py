@@ -2,12 +2,9 @@ import telebot
 import BotConfig
 import DataBase
 
-TELEBOT_TOKEN_ID = "6463635955:AAE1FVJf36OefFbxUwAM0XBKmn0HGCw0qvc"
 
-tele_bot = telebot.TeleBot(TELEBOT_TOKEN_ID)
-
-# конфиг бота
 bot_config = BotConfig.BotConfig()
+tele_bot = telebot.TeleBot(bot_config.telebot_token_id)
 bot_message_base = DataBase.DataBase(bot_config.database_row_limit)
 
 
@@ -28,7 +25,9 @@ def chat_id_request(message):
 # полинг всех сообщение
 @tele_bot.message_handler()
 def msg_request(message):
-    tele_bot.send_message(message.chat.id, f"Last message from {message.from_user.full_name}  ({message.from_user.username}): {message.html_text}")
+    tele_bot.send_message(message.chat.id,
+                          f"Last message from {message.from_user.full_name}  ({message.from_user.username}): "
+                          f"{message.html_text}")
     if message.from_user.is_bot:
         tele_bot.send_message(message.chat.id, f"This is bot")
     else:
