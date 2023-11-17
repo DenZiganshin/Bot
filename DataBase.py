@@ -1,12 +1,11 @@
-import sqlite3
-from pathlib import Path
-
+import DataBaseBase
 
 class DataBase:
-    def __init__(self, max_chat_data_count, db_path=Path('~').expanduser() / ".balabol_bot/database.db"):
+    def __init__(self, max_chat_data_count, database:DataBaseBase):
+        self.__data_base = database
         self.__table_name = "Phrase_value"
         self.__max_chat_data_count = max_chat_data_count
-        self.__open_table(db_path)
+        self.__open_table()
 
     def get_rand_messages(self, chat_id, count):
         res_rand = self.__get_rand_id(chat_id, count)
@@ -25,21 +24,19 @@ class DataBase:
             self.__add_messages(chat_id, msg)
 
     def get_messages(self, chat_id):
-        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ?', (chat_id, ))
-        return self.__cursor.fetchall()
+        self.__data_base.cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ?', (chat_id, ))
+        return self.__data_base.cursor.fetchall()
 
     def remove(self, id):
-        self.__cursor.execute(f'DELETE FROM {self.__table_name} WHERE id = ? ',
+        self.__data_base.cursor.execute(f'DELETE FROM {self.__table_name} WHERE id = ? ',
                               (id,))
 
     def clear(self):
-        self.__cursor.execute(f'DELETE FROM {self.__table_name}')
-        self.__connection.commit()
+        self.__data_base.cursor.execute(f'DELETE FROM {self.__table_name}')
+        self.__data_base.connection.commit()
 
-    def __open_table(self, db_path):
-        self.__connection = sqlite3.connect(str(db_path))
-        self.__cursor = self.__connection.cursor()
-        self.__cursor.execute(f'''
+    def __open_table(self):
+        self.__data_base.cursor.execute(f'''
                 CREATE TABLE IF NOT EXISTS {self.__table_name} (
                 id INTEGER PRIMARY KEY,
                 chat INTEGER NOT NULL,
@@ -48,8 +45,8 @@ class DataBase:
                 ''')
 
     def __get_message(self, id):
-        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where id = ?', (id, ))
-        msg_list = self.__cursor.fetchall()
+        self.__data_base.cursor.execute(f'SELECT message FROM {self.__table_name} where id = ?', (id, ))
+        msg_list = self.__data_base.cursor.fetchall()
         if len(msg_list) == 0:
             return None
         else:
@@ -67,19 +64,19 @@ class DataBase:
         return res_msgs
 
     def __is_message_exists(self, chat_id, messages):
-        self.__cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ? and message = ?',
+        self.__data_base.cursor.execute(f'SELECT message FROM {self.__table_name} where chat = ? and message = ?',
                               (chat_id, messages))
-        return len(self.__cursor.fetchall()) != 0
+        return len(self.__data_base.cursor.fetchall()) != 0
 
     def __add_messages(self, chat_id, message):
-        self.__cursor.execute(f'INSERT INTO {self.__table_name} (chat, message) VALUES (?, ?)',
+        self.__data_base.cursor.execute(f'INSERT INTO {self.__table_name} (chat, message) VALUES (?, ?)',
                        (chat_id, message))
-        self.__connection.commit()
+        self.__data_base.connection.commit()
 
     def __get_rand_id(self, chat_id, count):
-        self.__cursor.execute(f'SELECT id FROM {self.__table_name} where chat = ? ORDER BY RANDOM() LIMIT ?',
+        self.__data_base.cursor.execute(f'SELECT id FROM {self.__table_name} where chat = ? ORDER BY RANDOM() LIMIT ?',
                               (chat_id, count,))
-        return self.__cursor.fetchall()
+        return self.__data_base.cursor.fetchall()
 
     def __remove_oversize(self, chat_id, messages):
         cnt_for_remove = len(messages) + len(self.get_messages(chat_id)) - self.__max_chat_data_count
@@ -88,23 +85,21 @@ class DataBase:
             for id_for_remove in ids:
                 self.remove(id_for_remove[0])
 
-    def __del__(self):
-        self.__connection.commit()
-        self.__connection.close()
-
 
 if __name__ == '__main__':
-    db = DataBase(2, "tests/config/database.db")
+    db_base = DataBaseBase.DataBaseBase("tests/config/database.db")
+
+    db = DataBase(2, db_base)
 
     db.insert_new_data(1, {"a1"})
     db.insert_new_data(1, {"a2"})
     db.insert_new_data(1, {"a3"})
     db.insert_new_data(1, {"a4"})
 
-    # db.insert_new_data(2, {"a1"})
-    # db.insert_new_data(2, {"a2"})
-    # db.insert_new_data(2, {"a3"})
-    # db.insert_new_data(2, {"a4"})
+    db.insert_new_data(2, {"a1"})
+    db.insert_new_data(2, {"a2"})
+    db.insert_new_data(2, {"a3"})
+    db.insert_new_data(2, {"a4"})
 
     res = db.get_messages(1)
     res_rend = db.get_rand_messages(1, 1)
