@@ -1,11 +1,14 @@
 import telebot
-import BotConfig
-import DataBase
+from BotConfig import BotConfig
+from DataBase import DataBase
+from PhrasesTable import PhrasesTable
 
 
-bot_config = BotConfig.BotConfig()
+bot_config = BotConfig()
 tele_bot = telebot.TeleBot(bot_config.telebot_token_id)
-bot_message_base = DataBase.DataBase(bot_config.database_row_limit)
+
+bot_data_base = DataBase()
+bot_message_base = PhrasesTable(bot_data_base, bot_config.database_row_limit)
 
 
 @tele_bot.message_handler(commands=['show_for_me_this_fucking_config'])
