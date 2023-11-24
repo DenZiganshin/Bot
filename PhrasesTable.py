@@ -35,6 +35,55 @@ class PhrasesTable:
         self.__data_base.cursor.execute(f'DELETE FROM {self.__table_name}')
         self.__data_base.connection.commit()
 
+    @staticmethod
+    def parse_phrases (html_text):
+        phrase_separators = [".", "!", "?", ")", "(",  "\"", "\'", "<", ">", "&lt;", "&gt;", "\n" ] 
+        list_of_phrases = []
+        string_index = 0
+        closest_separator_index = 0
+        closest_separator_char = ""
+        last_separator_char = ""
+        current_iteration = 0
+        max_iterations = 20
+
+        while current_iteration < max_iterations :
+            current_iteration += 1
+
+            closest_separator_index = len(html_text)
+            closest_separator_char = ""
+            for char in phrase_separators :
+                found_index = html_text.find(char, string_index)
+                if (found_index != -1) and (found_index < closest_separator_index) :
+                    closest_separator_index = found_index
+                    closest_separator_char = char
+            
+            phrase = ""
+            if closest_separator_char:
+                phrase = html_text[string_index:closest_separator_index]
+                string_index = closest_separator_index + len(closest_separator_char)
+                
+            else:
+                break
+
+            if ( (last_separator_char == "<") and (closest_separator_char == ">") ) or \
+                ( (last_separator_char == "&lt;") and (closest_separator_char == "&gt;") ):
+                #for now just skip html tags
+                continue;
+        
+            last_separator_char = closest_separator_char
+
+            if not phrase :
+                continue
+            
+            if phrase.isspace() :
+                continue
+
+            phrase.strip()
+
+            list_of_phrases.append(phrase)
+
+        return list_of_phrases
+
     def __open_table(self):
         self.__data_base.cursor.execute(f'''
                 CREATE TABLE IF NOT EXISTS {self.__table_name} (
@@ -119,4 +168,11 @@ if __name__ == '__main__':
     print(f"res_rend {res_rend}")
     print(f"res2 {res2}")
     print(f"res3 {res3}")
+
+    html_text = "text with spaces\n" \
+            "expression! question? <fucking_tag> <emoji_which_we_probably_loose> word)\n" \
+            "(braces) &lt;tag replacers&gt; long thought...\n" \
+            "\"some ironic phrase\""
+    phrases = db.parse_phrases(html_text)
+    print(phrases)
 
