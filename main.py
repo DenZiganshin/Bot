@@ -8,7 +8,7 @@ bot_config = BotConfig()
 tele_bot = telebot.TeleBot(bot_config.telebot_token_id)
 
 bot_data_base = DataBase()
-bot_message_base = PhrasesTable(bot_data_base, bot_config.database_row_limit)
+bot_message_base = PhrasesTable(bot_config.database_row_limit, bot_data_base)
 
 
 @tele_bot.message_handler(commands=['show_for_me_this_fucking_config'])
