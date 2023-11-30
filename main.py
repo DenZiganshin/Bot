@@ -25,6 +25,16 @@ def chat_id_request(message):
     tele_bot.send_message(message.chat.id, f"Current chat id is {message.chat.id}")
 
 
+# полинг сообщений "/debug_message_database"
+@tele_bot.message_handler(commands=['debug_message_database'])
+def chat_id_request(message):
+    messages = bot_message_base.get_messages(message.chat.id)
+    debug_messages_file = open('debug_messages.txt','w')
+    for line in messages:
+        debug_messages_file.write(line)
+        
+    tele_bot.send_document(message.chat.id, debug_messages_file)
+
 # полинг всех сообщение
 @tele_bot.message_handler()
 def msg_request(message):
