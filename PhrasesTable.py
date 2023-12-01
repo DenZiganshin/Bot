@@ -1,10 +1,9 @@
 from DataBase import DataBase
 
 class PhrasesTable:
-    def __init__(self, max_chat_data_count, database:DataBase):
+    def __init__(self, database:DataBase):
         self.__data_base = database
         self.__table_name = "Phrase_value"
-        self.__max_chat_data_count = max_chat_data_count
         self.__open_table()
 
     def get_rand_messages(self, chat_id, count):
@@ -15,10 +14,10 @@ class PhrasesTable:
             messages.append(self.__get_message(id_tuple[0])[0])
         return messages
 
-    def insert_new_data(self, chat_id, messages):
+    def insert_new_data(self, chat_id, messages, max_data_count):
         messages = self.__remove_not_unique(messages)
         messages = self.__remove_existed(chat_id, messages)
-        self.__remove_oversize(chat_id, messages)
+        self.__remove_oversize(chat_id, messages, max_data_count)
 
         for msg in messages:
             self.__add_messages(chat_id, msg)
@@ -127,8 +126,8 @@ class PhrasesTable:
                               (chat_id, count,))
         return self.__data_base.cursor.fetchall()
 
-    def __remove_oversize(self, chat_id, messages):
-        cnt_for_remove = len(messages) + len(self.get_messages(chat_id)) - self.__max_chat_data_count
+    def __remove_oversize(self, chat_id, messages, max_data_count):
+        cnt_for_remove = len(messages) + len(self.get_messages(chat_id)) - max_data_count
         if cnt_for_remove > 0:
             ids = self.__get_rand_id(chat_id, cnt_for_remove)
             for id_for_remove in ids:
@@ -138,17 +137,18 @@ class PhrasesTable:
 if __name__ == '__main__':
     db_base = DataBase("tests/config/database.db")
 
-    db = PhrasesTable(2, db_base)
+    max_data_cnt = 2
+    db = PhrasesTable(db_base)
 
-    db.insert_new_data(1, {"a1"})
-    db.insert_new_data(1, {"a2"})
-    db.insert_new_data(1, {"a3"})
-    db.insert_new_data(1, {"a4"})
+    db.insert_new_data(1, {"a1"}, max_data_cnt)
+    db.insert_new_data(1, {"a2"}, max_data_cnt)
+    db.insert_new_data(1, {"a3"}, max_data_cnt)
+    db.insert_new_data(1, {"a4"}, max_data_cnt)
 
-    db.insert_new_data(2, {"a1"})
-    db.insert_new_data(2, {"a2"})
-    db.insert_new_data(2, {"a3"})
-    db.insert_new_data(2, {"a4"})
+    db.insert_new_data(2, {"a1"}, max_data_cnt)
+    db.insert_new_data(2, {"a2"}, max_data_cnt)
+    db.insert_new_data(2, {"a3"}, max_data_cnt)
+    db.insert_new_data(2, {"a4"}, max_data_cnt)
 
     res = db.get_messages(1)
     res_rend = db.get_rand_messages(1, 1)
