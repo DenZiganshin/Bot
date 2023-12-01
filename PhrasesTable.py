@@ -35,7 +35,7 @@ class PhrasesTable:
         self.__data_base.connection.commit()
 
     @staticmethod
-    def parse_phrases (html_text):
+    def parse_phrases(html_text):
         phrase_separators = [".", "!", "?", ")", "(",  "\"", "\'", "<", ">", "&lt;", "&gt;", "\n" ] 
         list_of_phrases = []
         string_index = 0

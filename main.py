@@ -42,12 +42,13 @@ def chat_id_request(message):
 @tele_bot.message_handler(commands=['debug_message_database'])
 def chat_id_request(message):
     messages = bot_message_base.get_messages(message.chat.id)
-    if len(messages) == 0 :
+    if len(messages) == 0:
         tele_bot.send_message(message.chat.id, "No data")
     else:
         debug_messages_file = open('debug_messages.txt', 'w+')
         for line in messages:
-            debug_messages_file.write(line)
+            debug_messages_file.write(f"{line[0]}\n")
+        debug_messages_file.seek(0)
 
         tele_bot.send_document(message.chat.id, debug_messages_file)
 
@@ -127,13 +128,8 @@ def set_database_row_limit_handler(message):
 # полинг всех сообщение
 @tele_bot.message_handler()
 def msg_request(message):
-    tele_bot.send_message(message.chat.id,
-                          f"Last message from {message.from_user.full_name}  ({message.from_user.username}): "
-                          f"{message.html_text}")
-    if message.from_user.is_bot:
-        tele_bot.send_message(message.chat.id, f"This is bot")
-    else:
-        tele_bot.send_message(message.chat.id, f"This not is bot")
+    phrases = bot_message_base.parse_phrases(message.html_text)
+    bot_message_base.insert_new_data(message.chat.id, phrases, bot_config_base.get_database_row_limit(message.chat.id))
 
 
 if __name__ == '__main__':
