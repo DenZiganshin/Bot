@@ -85,7 +85,7 @@ class PhrasesTable:
             if phrase.isspace() :
                 continue
 
-            phrase.strip()
+            phrase = phrase.strip()
 
             list_of_phrases.append(phrase)
 
