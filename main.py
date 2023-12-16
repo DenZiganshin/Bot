@@ -1,4 +1,5 @@
 import telebot
+import random
 from BotConfig import BotConfig
 from DataBase import DataBase
 from PhrasesTable import PhrasesTable
@@ -128,9 +129,27 @@ def set_database_row_limit_handler(message):
 # полинг всех сообщение
 @tele_bot.message_handler()
 def msg_request(message):
-    phrases = bot_message_base.parse_phrases(message.html_text)
-    bot_message_base.insert_new_data(message.chat.id, phrases, bot_config_base.get_database_row_limit(message.chat.id))
+    if not bot_message_base.is_text_contains_link(message.html_text) :
+        phrases = bot_message_base.parse_phrases(message.html_text)
+        bot_message_base.insert_new_data(message.chat.id, phrases, bot_config_base.get_database_row_limit(message.chat.id))
+    
+    # make some response
+    random_num = random.randint(0, 100)
+    if random_num <= bot_config_base.get_message_initiation_frequency(message.chat.id) :
+        phrase_cnt = bot_config_base.get_phrases_in_bot_message_count(message.chat.id)
+        if phrase_cnt > 0 :
+            phrase_postfixes = [ "!", ".", "?" ]
+            response_text = ""
+            phrases = bot_message_base.get_rand_messages(message.chat.id, phrase_cnt)
+            for ph in phrases :
+                if response_text :
+                    response_text += " "
+                response_text += ph
+                response_text += phrase_postfixes[random.randint(0, len(phrase_postfixes) - 1 )]
+            if response_text :
+                tele_bot.send_message(message.chat.id, response_text)
 
 
 if __name__ == '__main__':
+    random.seed()
     tele_bot.infinity_polling()
