@@ -91,6 +91,16 @@ class PhrasesTable:
 
         return list_of_phrases
 
+    @staticmethod
+    def is_text_contains_link(html_text):
+        link_prefixes = [ "https:", "http:", "ftp:", "sftp:", "smb:" ]
+
+        for prefix in link_prefixes :
+            if html_text.find(prefix) != -1 :
+                return True
+        
+        return False
+
     def __open_table(self):
         self.__data_base.cursor.execute(f'''
                 CREATE TABLE IF NOT EXISTS {self.__table_name} (
@@ -183,4 +193,12 @@ if __name__ == '__main__':
             "\"some ironic phrase\""
     phrases = db.parse_phrases(html_text)
     print(phrases)
+
+    msg1 = "some text and https://en.cppreference.com/w/cpp/string/basic_string/find"
+    msg2 = "another text"
+    msg3 = "some different text with smb://keenetic-6518/"
+
+    print(db.is_text_contains_link(msg1))
+    print(db.is_text_contains_link(msg2))
+    print(db.is_text_contains_link(msg3))
 
