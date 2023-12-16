@@ -43,7 +43,8 @@ class PhrasesTable:
         closest_separator_char = ""
         last_separator_char = ""
         current_iteration = 0
-        max_iterations = 20
+        max_iterations = 100
+        separator_found = False
 
         while current_iteration < max_iterations :
             current_iteration += 1
@@ -55,9 +56,16 @@ class PhrasesTable:
                 if (found_index != -1) and (found_index < closest_separator_index) :
                     closest_separator_index = found_index
                     closest_separator_char = char
+                    separator_found = True
+                
+            if not separator_found :
+                # no more separators
+                closest_separator_index = len(html_text)
+                closest_separator_char = "\n"
+                separator_found = True
             
             phrase = ""
-            if closest_separator_char:
+            if separator_found:
                 phrase = html_text[string_index:closest_separator_index]
                 string_index = closest_separator_index + len(closest_separator_char)
                 
