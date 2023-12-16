@@ -36,7 +36,7 @@ class PhrasesTable:
 
     @staticmethod
     def parse_phrases(html_text):
-        phrase_separators = [".", "!", "?", ")", "(",  "\"", "\'", "<", ">", "&lt;", "&gt;", "\n" ] 
+        phrase_separators = [".", "!", "?", ")", "(", "<", ">", "&lt;", "&gt;", "\n" ] 
         list_of_phrases = []
         string_index = 0
         closest_separator_index = 0
