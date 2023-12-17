@@ -93,7 +93,7 @@ class PhrasesTable:
 
     @staticmethod
     def is_text_contains_link(html_text):
-        link_prefixes = [ "https:", "http:", "ftp:", "sftp:", "smb:" ]
+        link_prefixes = [ "https:", "http:", "ftp:", "sftp:", "smb:", "tg:" ]
 
         for prefix in link_prefixes :
             if html_text.find(prefix) != -1 :

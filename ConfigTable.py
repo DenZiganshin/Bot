@@ -80,7 +80,7 @@ class ConfigTable:
                 update_time TIMESTAMP,
                 database_row_limit INTEGER,
                 phrases_in_bot_message_count INTEGER,
-                inbound_phrase_lenght_limit INTEGER,
+                inbound_phrase_length_limit INTEGER,
                 message_initiation_frequency INTEGER
                 )
                 ''')
