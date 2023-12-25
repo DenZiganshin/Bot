@@ -98,7 +98,7 @@ class ConfigTable:
         self.__data_base.connection.commit()
 
     def __create(self, chat_id):
-        self.__data_base.cursor.execute(f'INSERT INTO {self.__table_name} (chat_id, update_time, database_row_limit, phrases_in_bot_message_count, inbound_phrase_lenght_limit, message_initiation_frequency) VALUES (?, ?, ?, ?, ?, ?)',
+        self.__data_base.cursor.execute(f'INSERT INTO {self.__table_name} (chat_id, update_time, database_row_limit, phrases_in_bot_message_count, inbound_phrase_length_limit, message_initiation_frequency) VALUES (?, ?, ?, ?, ?, ?)',
                        (chat_id, datetime.datetime.now(), 100, 5, 50, 50))
         self.__data_base.connection.commit()
 
