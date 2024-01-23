@@ -96,7 +96,7 @@ class PhrasesTable:
         link_prefixes = [ "https:", "http:", "ftp:", "sftp:", "smb:", "tg:" ]
 
         for prefix in link_prefixes :
-            if html_text.find(prefix) != -1 :
+            if html_text.find(prefix) != -1:
                 return True
         
         return False
